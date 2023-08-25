@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Blockchain UI</title>
+</head>
+<body>
+<h1>Blockchain UI</h1>
+<p>This is a simple UI that allows you to interact with a blockchain.</p>
+<h2>Add a block</h2>
+<input type="text" id="data" placeholder="Data to add to the block">
+<button id="add-block">Add block</button>
+<h2>View the blockchain</h2>
+<ul id="blockchain"></ul>
+<script>
+const blockchain = [];
+
+const addBlock = () => {
+  const data = document.getElementById("data").value;
+  const block = {
+    index: blockchain.length + 1,
+    timestamp: Date.now(),
+    data,
+    previous_hash: blockchain[blockchain.length - 1].hash
+  };
+
+  blockchain.push(block);
+
+  document.getElementById("blockchain").innerHTML = "";
+  blockchain.forEach((block) => {
+    const li = document.createElement("li");
+    li.innerHTML = `Block ${block.index}: ${block.data}`;
+    document.getElementById("blockchain").appendChild(li);
+  });
+};
+
+document.getElementById("add-block").addEventListener("click", addBlock);
+</script>
+</body>
+</html>
