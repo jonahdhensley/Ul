@@ -12,28 +12,76 @@
 <h2>View the blockchain</h2>
 <ul id="blockchain"></ul>
 <script>
-const blockchain = [];
+const hashlib = require("hashlib");
+const json = require("json");
+const time = require("time");
 
-const addBlock = () => {
-  const data = document.getElementById("data").value;
-  const block = {
-    index: blockchain.length + 1,
-    timestamp: Date.now(),
-    data,
-    previous_hash: blockchain[blockchain.length - 1].hash
-  };
+class Block {
+  constructor(index, timestamp, data, previousHash) {
+    this.index = index;
+    this.timestamp = timestamp;
+    this.data = data;
+    this.previousHash = previousHash;
+    this.hash = this.calculateHash();
+  }
 
-  blockchain.push(block);
+  calculateHash() {
+    const blockString = JSON.stringify(this, null, 2);
+    return hashlib.sha256(blockString).hexdigest();
+  }
+}
 
-  document.getElementById("blockchain").innerHTML = "";
-  blockchain.forEach((block) => {
-    const li = document.createElement("li");
-    li.innerHTML = `Block ${block.index}: ${block.data}`;
-    document.getElementById("blockchain").appendChild(li);
-  });
-};
+class Blockchain {
+  constructor() {
+    this.chain = [];
+    this.createGenesisBlock();
+  }
 
-document.getElementById("add-block").addEventListener("click", addBlock);
+  createGenesisBlock() {
+    const block = new Block(0, time(), "Genesis block", "");
+    this.chain.push(block);
+  }
+
+  addBlock(data) {
+    const previousHash = this.chain[this.chain.length - 1].hash;
+    const block = new Block(this.chain.length, time(), data, previousHash);
+    this.chain.push(block);
+    return block;
+  }
+
+  isValid() {
+    for (let i = 1; i < this.chain.length; i++) {
+      const currentBlock = this.chain[i];
+      const previousBlock = this.chain[i - 1];
+
+      if (currentBlock.previousHash !== previousBlock.hash) {
+        return false;
+      }
+
+      if (currentBlock.hash !== currentBlock.calculateHash()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+function main() {
+  const blockchain = new Blockchain();
+
+  blockchain.addBlock("This is the first block");
+  blockchain.addBlock("This is the second block");
+
+  console.log("The blockchain is valid:", blockchain.isValid());
+}
+
+if (require.main === module) {
+  main();
+}
+
+
+
 </script>
 </body>
 </html>
